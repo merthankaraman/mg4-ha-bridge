@@ -6,5 +6,5 @@
   "documentation": "https://github.com/merthankaraman/mg4-ha-bridge",
   "issue_tracker": "https://github.com/merthankaraman/mg4-ha-bridge/issues",
   "iot_class": "cloud_push",
-  "version": "1.1.0"
+  "version": "1.1.1"
 }
