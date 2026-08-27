@@ -35,7 +35,7 @@ SENSORS: tuple[
     ("address", "Adres", None, None, None, None),
     ("mileage", "Kilometre", UnitOfLength.KILOMETERS, SensorDeviceClass.DISTANCE, SensorStateClass.TOTAL_INCREASING, 0),
     ("battery", "Şarj yüzdesi", PERCENTAGE, SensorDeviceClass.BATTERY, SensorStateClass.MEASUREMENT, 1),
-    ("charge_limit", "Şarj sınırı", PERCENTAGE, SensorDeviceClass.BATTERY, SensorStateClass.MEASUREMENT, 0),
+    ("charge_limit", "Şarj sınırı", PERCENTAGE, None, SensorStateClass.MEASUREMENT, 0),
     ("range", "Menzil", UnitOfLength.KILOMETERS, SensorDeviceClass.DISTANCE, SensorStateClass.MEASUREMENT, 0),
     ("exterior_temperature", "Dış sıcaklık", UnitOfTemperature.CELSIUS, SensorDeviceClass.TEMPERATURE, SensorStateClass.MEASUREMENT, 0),
     ("tire_pressure_fl", "Lastik sol ön", UnitOfPressure.KPA, SensorDeviceClass.PRESSURE, SensorStateClass.MEASUREMENT, 0),
@@ -108,6 +108,8 @@ class Mg4Sensor(RestoreSensor):
             ]
         if key == "address":
             self._attr_icon = "mdi:map-marker"
+        if key == "charge_limit":
+            self._attr_icon = "mdi:battery-charging-80"
 
     def _data(self) -> dict:
         return self.hass.data[DOMAIN][self._entry.entry_id]["data"]
