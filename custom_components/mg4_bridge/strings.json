@@ -1,0 +1,63 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "MG4 Home Assistant Bridge",
+        "description": "Creates a device; the car app pushes telemetry via the mg4_bridge.push service from any network using your HA URL and token. Prefix must match the app entity prefix.",
+        "data": {
+          "name": "Device name",
+          "prefix": "Entity prefix"
+        }
+      }
+    },
+    "error": {
+      "invalid_prefix": "Invalid prefix"
+    },
+    "abort": {
+      "already_configured": "This prefix is already configured."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "last_update": { "name": "Last update" },
+      "address": { "name": "Address" },
+      "mileage": { "name": "Odometer" },
+      "battery": { "name": "State of charge" },
+      "charge_limit": { "name": "Charge limit" },
+      "range": { "name": "Range" },
+      "exterior_temperature": { "name": "Exterior temperature" },
+      "tire_pressure_fl": { "name": "Tire front left" },
+      "tire_pressure_fr": { "name": "Tire front right" },
+      "tire_pressure_rl": { "name": "Tire rear left" },
+      "tire_pressure_rr": { "name": "Tire rear right" },
+      "charging_status": {
+        "name": "Charging status",
+        "state": {
+          "unplugged": "Unplugged",
+          "AC": "AC charging",
+          "connecting": "Connecting",
+          "plugged_in": "Plugged in, not charging",
+          "stopped": "Stopped",
+          "DC": "DC charging",
+          "unknown": "Unknown"
+        }
+      },
+      "charge_remaining": { "name": "Charge remaining" },
+      "charge_finish": { "name": "Charge finish time" },
+      "battery_voltage": { "name": "Battery voltage" },
+      "battery_current": { "name": "Battery current" },
+      "battery_charging_power": { "name": "Battery power" },
+      "station_dc_current": { "name": "Station current" },
+      "station_dc_power": { "name": "Station power" },
+      "ac_voltage": { "name": "AC voltage" },
+      "ac_current": { "name": "AC current" },
+      "ac_charging_power": { "name": "AC charge power" }
+    },
+    "binary_sensor": {
+      "charging": { "name": "Charging" }
+    },
+    "device_tracker": {
+      "location": { "name": "Location" }
+    }
+  }
+}

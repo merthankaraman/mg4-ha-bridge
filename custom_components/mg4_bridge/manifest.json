@@ -1,0 +1,10 @@
+{
+  "domain": "mg4_bridge",
+  "name": "MG4 Home Assistant Bridge",
+  "codeowners": ["@merthankaraman"],
+  "config_flow": true,
+  "documentation": "https://github.com/merthankaraman/mg4-ha-bridge",
+  "issue_tracker": "https://github.com/merthankaraman/mg4-ha-bridge/issues",
+  "iot_class": "cloud_push",
+  "version": "1.1.0"
+}

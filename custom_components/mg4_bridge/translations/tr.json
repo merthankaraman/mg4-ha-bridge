@@ -1,0 +1,63 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "MG4 Home Assistant Bridge",
+        "description": "Cihaz oluşturur; araç uygulaması her WiFi'den token ile mg4_bridge.push servisine yazar. Önek uygulamadaki varlık öneki ile aynı olmalı.",
+        "data": {
+          "name": "Cihaz adı",
+          "prefix": "Varlık öneki"
+        }
+      }
+    },
+    "error": {
+      "invalid_prefix": "Geçersiz önek"
+    },
+    "abort": {
+      "already_configured": "Bu önek zaten ekli."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "last_update": { "name": "Son güncelleme" },
+      "address": { "name": "Adres" },
+      "mileage": { "name": "Kilometre" },
+      "battery": { "name": "Şarj yüzdesi" },
+      "charge_limit": { "name": "Şarj sınırı" },
+      "range": { "name": "Menzil" },
+      "exterior_temperature": { "name": "Dış sıcaklık" },
+      "tire_pressure_fl": { "name": "Lastik sol ön" },
+      "tire_pressure_fr": { "name": "Lastik sağ ön" },
+      "tire_pressure_rl": { "name": "Lastik sol arka" },
+      "tire_pressure_rr": { "name": "Lastik sağ arka" },
+      "charging_status": {
+        "name": "Şarj durumu",
+        "state": {
+          "unplugged": "Prizde değil",
+          "AC": "AC şarj",
+          "connecting": "Bağlanıyor",
+          "plugged_in": "Prizde, şarj yok",
+          "stopped": "Durdu",
+          "DC": "DC şarj",
+          "unknown": "Bilinmiyor"
+        }
+      },
+      "charge_remaining": { "name": "Kalan şarj süresi" },
+      "charge_finish": { "name": "Şarj bitiş saati" },
+      "battery_voltage": { "name": "Batarya voltaj" },
+      "battery_current": { "name": "Batarya akım" },
+      "battery_charging_power": { "name": "Batarya gücü" },
+      "station_dc_current": { "name": "İstasyon akımı" },
+      "station_dc_power": { "name": "İstasyon gücü" },
+      "ac_voltage": { "name": "AC voltaj" },
+      "ac_current": { "name": "AC akım" },
+      "ac_charging_power": { "name": "AC şarj gücü" }
+    },
+    "binary_sensor": {
+      "charging": { "name": "Şarjda" }
+    },
+    "device_tracker": {
+      "location": { "name": "Konum" }
+    }
+  }
+}
