@@ -7,7 +7,7 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import CONF_NAME, CONF_PREFIX, DOMAIN, SIGNAL_UPDATE
-from .device import bridge_device
+from .device import Mg4CarSyncedMixin, bridge_device
 
 
 async def async_setup_entry(
@@ -19,9 +19,10 @@ async def async_setup_entry(
     async_add_entities([entity])
 
 
-class Mg4HvacSwitch(SwitchEntity):
+class Mg4HvacSwitch(Mg4CarSyncedMixin, SwitchEntity):
     """Araba → HA: push ile senkron; HA → araba: poll ile uygular."""
 
+    _car_sync_key = "hvac"
     _attr_has_entity_name = True
     _attr_translation_key = "hvac"
     _attr_icon = "mdi:air-conditioner"
@@ -33,13 +34,12 @@ class Mg4HvacSwitch(SwitchEntity):
         self._prefix = entry.data[CONF_PREFIX]
         self._attr_unique_id = f"{self._prefix}_hvac"
         self._attr_device_info = bridge_device(self._prefix, entry.data[CONF_NAME])
-        self._attr_is_on = False
         self._pending_ha_target: bool | None = None
         self._pending_car_value: bool | None = None
         self._last_car_value: bool | None = None
 
     def _data(self) -> dict:
-        return self.hass.data[DOMAIN][self._entry.entry_id]["data"]
+        return self._car_store()
 
     def _car_hvac(self) -> bool | None:
         raw = self._data().get("hvac")

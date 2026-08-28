@@ -62,6 +62,7 @@
     "number": {
       "charge_limit_set": { "name": "Şarj sınırı" },
       "hvac_temperature_set": { "name": "Kabin sıcaklığı" },
+      "hvac_fan_set": { "name": "Klima fanı (12=Otomatik)" },
       "media_volume_set": { "name": "Multimedya sesi" }
     },
     "device_tracker": {
