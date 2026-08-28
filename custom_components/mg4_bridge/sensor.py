@@ -23,7 +23,7 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
 
-from .const import CONF_NAME, CONF_PREFIX, DOMAIN, SIGNAL_UPDATE
+from .const import CONF_NAME, CONF_PREFIX, DOMAIN, ENTITY_SENSOR_NAMES, SIGNAL_UPDATE
 from .device import bridge_device
 
 # key, unit, device_class, state_class, suggested_display_precision
@@ -86,6 +86,7 @@ class Mg4Sensor(RestoreSensor):
         self._key = key
         self._attr_unique_id = f"{prefix}_{key}"
         self._attr_translation_key = key
+        self._attr_name = ENTITY_SENSOR_NAMES[key]
         self._attr_native_unit_of_measurement = unit
         self._attr_device_class = device_class
         self._attr_state_class = state_class

@@ -10,7 +10,7 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
 
-from .const import CONF_NAME, CONF_PREFIX, DOMAIN, SIGNAL_UPDATE
+from .const import CONF_NAME, CONF_PREFIX, DOMAIN, ENTITY_NUMBER_NAMES, SIGNAL_UPDATE
 from .device import bridge_device
 
 # Araç ham değer 1..7 → %40..%100 (40 + (n-1)*10)
@@ -44,6 +44,7 @@ class Mg4ChargeLimitNumber(NumberEntity):
 
     _attr_has_entity_name = True
     _attr_translation_key = "charge_limit_set"
+    _attr_name = ENTITY_NUMBER_NAMES["charge_limit_set"]
     _attr_icon = "mdi:battery-charging-80"
     _attr_mode = NumberMode.SLIDER
     _attr_native_unit_of_measurement = PERCENTAGE

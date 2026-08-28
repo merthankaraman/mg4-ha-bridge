@@ -10,7 +10,7 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
 
-from .const import CONF_NAME, CONF_PREFIX, DOMAIN, SIGNAL_UPDATE
+from .const import CONF_NAME, CONF_PREFIX, DOMAIN, ENTITY_BINARY_SENSOR_NAMES, SIGNAL_UPDATE
 from .device import bridge_device
 
 
@@ -24,6 +24,7 @@ class Mg4ChargingBinary(BinarySensorEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_should_poll = False
     _attr_translation_key = "charging"
+    _attr_name = ENTITY_BINARY_SENSOR_NAMES["charging"]
     _attr_device_class = BinarySensorDeviceClass.BATTERY_CHARGING
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:

@@ -9,7 +9,7 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
 
-from .const import CONF_NAME, CONF_PREFIX, DOMAIN, SIGNAL_UPDATE
+from .const import CONF_NAME, CONF_PREFIX, DOMAIN, ENTITY_SWITCH_NAMES, SIGNAL_UPDATE
 from .device import bridge_device
 
 # HA switch → poll → araç onaylanana kadar eski push ile geri yazma
@@ -30,6 +30,7 @@ class Mg4HvacSwitch(SwitchEntity):
 
     _attr_has_entity_name = True
     _attr_translation_key = "hvac"
+    _attr_name = ENTITY_SWITCH_NAMES["hvac"]
     _attr_icon = "mdi:air-conditioner"
     _attr_should_poll = False
 
