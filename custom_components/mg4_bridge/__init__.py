@@ -87,24 +87,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             merged.update(payload)
             if "online" not in payload:
                 merged["online"] = True
-            # DC istasyon alanları yalnız DC şarjdayken
-            if merged.get("charging_status") != "DC":
-                merged.pop("station_dc_current", None)
-                merged.pop("station_dc_power", None)
-            # Kalan süre yalnız AC/DC şarjdayken; payload'da yoksa temizle
-            if merged.get("charging_status") not in ("AC", "DC") or "charge_remaining" not in payload:
-                merged.pop("charge_remaining", None)
-                merged.pop("charge_finish", None)
-            else:
-                try:
-                    mins = int(merged["charge_remaining"])
-                    if mins >= 0:
-                        finish = dt_util.now() + timedelta(minutes=mins)
-                        merged["charge_finish"] = finish.isoformat()
-                    else:
-                        merged.pop("charge_finish", None)
-                except (TypeError, ValueError):
+            # charge_finish: kalan süre > 0 ise hesapla
+            try:
+                mins = int(merged.get("charge_remaining", 0))
+                if merged.get("charging_status") in ("AC", "DC") and mins > 0:
+                    merged["charge_finish"] = (
+                        dt_util.now() + timedelta(minutes=mins)
+                    ).isoformat()
+                else:
                     merged.pop("charge_finish", None)
+            except (TypeError, ValueError):
+                merged.pop("charge_finish", None)
 
             # GPS → adres (Nominatim); aynı noktada tekrar sorgu yok
             lat = merged.get("latitude")

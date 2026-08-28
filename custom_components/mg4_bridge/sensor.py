@@ -147,10 +147,8 @@ class Mg4Sensor(RestoreSensor):
         data = self._data()
         if not data or data.get("online") is False:
             return False
-        if self._key in ("station_dc_current", "station_dc_power"):
-            return data.get("charging_status") == "DC" and self._key in data
-        if self._key in ("charge_remaining", "charge_finish"):
-            return data.get("charging_status") in ("AC", "DC") and self._key in data
+        if self._key == "charge_finish":
+            return self._key in data and data.get("charge_remaining", 0) not in (0, None)
         if self._key == "address":
             return self._key in data and bool(data.get("address"))
         return self._key in data
