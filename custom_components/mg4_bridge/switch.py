@@ -1,19 +1,13 @@
 from __future__ import annotations
 
-from datetime import datetime
-
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.util import dt as dt_util
 
 from .const import CONF_NAME, CONF_PREFIX, DOMAIN, ENTITY_SWITCH_NAMES, SIGNAL_UPDATE
 from .device import bridge_device
-
-# HA switch → poll → araç onaylanana kadar eski push ile geri yazma
-PENDING_HA_GRACE_SEC = 90
 
 
 async def async_setup_entry(
@@ -42,15 +36,23 @@ class Mg4HvacSwitch(SwitchEntity):
         self._attr_device_info = bridge_device(self._prefix, entry.data[CONF_NAME])
         self._attr_is_on = False
         self._pending_ha_target: bool | None = None
-        self._pending_since: datetime | None = None
+        self._pending_car_value: bool | None = None
+        self._last_car_value: bool | None = None
 
     def _data(self) -> dict:
         return self.hass.data[DOMAIN][self._entry.entry_id]["data"]
+
+    def _car_hvac(self) -> bool | None:
+        raw = self._data().get("hvac")
+        if isinstance(raw, bool):
+            return raw
+        return self._last_car_value
 
     async def async_added_to_hass(self) -> None:
         raw = self._data().get("hvac")
         if isinstance(raw, bool):
             self._attr_is_on = raw
+            self._last_car_value = raw
         self.async_on_remove(
             async_dispatcher_connect(
                 self.hass,
@@ -66,33 +68,33 @@ class Mg4HvacSwitch(SwitchEntity):
             self.async_write_ha_state()
             return
 
-        now = dt_util.utcnow()
         if self._pending_ha_target is not None:
             if raw == self._pending_ha_target:
                 self._pending_ha_target = None
-                self._pending_since = None
+                self._pending_car_value = None
             elif (
-                self._pending_since is not None
-                and (now - self._pending_since).total_seconds() < PENDING_HA_GRACE_SEC
+                self._pending_car_value is not None
+                and raw != self._pending_car_value
             ):
+                self._pending_ha_target = None
+                self._pending_car_value = None
+            else:
                 self.async_write_ha_state()
                 return
-            else:
-                self._pending_ha_target = None
-                self._pending_since = None
 
         if self._attr_is_on != raw:
             self._attr_is_on = raw
+        self._last_car_value = raw
         self.async_write_ha_state()
 
     async def async_turn_on(self, **kwargs) -> None:
         self._attr_is_on = True
         self._pending_ha_target = True
-        self._pending_since = dt_util.utcnow()
+        self._pending_car_value = self._car_hvac()
         self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs) -> None:
         self._attr_is_on = False
         self._pending_ha_target = False
-        self._pending_since = dt_util.utcnow()
+        self._pending_car_value = self._car_hvac()
         self.async_write_ha_state()
