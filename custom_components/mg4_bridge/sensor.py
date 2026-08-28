@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+from datetime import datetime
+
 from homeassistant.components.sensor import (
     RestoreSensor,
     SensorDeviceClass,
     SensorStateClass,
 )
-from datetime import datetime
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     PERCENTAGE,
@@ -26,33 +26,32 @@ from homeassistant.util import dt as dt_util
 from .const import CONF_NAME, CONF_PREFIX, DOMAIN, SIGNAL_UPDATE
 from .device import bridge_device
 
-# key, name, unit, device_class, state_class, suggested_display_precision
+# key, unit, device_class, state_class, suggested_display_precision
 SENSORS: tuple[
-    tuple[str, str, str | None, SensorDeviceClass | None, SensorStateClass | None, int | None],
+    tuple[str, str | None, SensorDeviceClass | None, SensorStateClass | None, int | None],
     ...,
 ] = (
-    ("last_update", "Son güncelleme", None, SensorDeviceClass.TIMESTAMP, None, None),
-    ("address", "Adres", None, None, None, None),
-    ("mileage", "Kilometre", UnitOfLength.KILOMETERS, SensorDeviceClass.DISTANCE, SensorStateClass.TOTAL_INCREASING, 0),
-    ("battery", "Şarj yüzdesi", PERCENTAGE, SensorDeviceClass.BATTERY, SensorStateClass.MEASUREMENT, 1),
-    ("charge_limit", "Şarj sınırı", PERCENTAGE, None, SensorStateClass.MEASUREMENT, 0),
-    ("range", "Menzil", UnitOfLength.KILOMETERS, SensorDeviceClass.DISTANCE, SensorStateClass.MEASUREMENT, 0),
-    ("exterior_temperature", "Dış sıcaklık", UnitOfTemperature.CELSIUS, SensorDeviceClass.TEMPERATURE, SensorStateClass.MEASUREMENT, 0),
-    ("tire_pressure_fl", "Lastik sol ön", UnitOfPressure.KPA, SensorDeviceClass.PRESSURE, SensorStateClass.MEASUREMENT, 0),
-    ("tire_pressure_fr", "Lastik sağ ön", UnitOfPressure.KPA, SensorDeviceClass.PRESSURE, SensorStateClass.MEASUREMENT, 0),
-    ("tire_pressure_rl", "Lastik sol arka", UnitOfPressure.KPA, SensorDeviceClass.PRESSURE, SensorStateClass.MEASUREMENT, 0),
-    ("tire_pressure_rr", "Lastik sağ arka", UnitOfPressure.KPA, SensorDeviceClass.PRESSURE, SensorStateClass.MEASUREMENT, 0),
-    ("charging_status", "Şarj durumu", None, None, None, None),
-    ("charge_remaining", "Kalan şarj süresi", UnitOfTime.MINUTES, SensorDeviceClass.DURATION, SensorStateClass.MEASUREMENT, 0),
-    ("charge_finish", "Şarj bitiş saati", None, SensorDeviceClass.TIMESTAMP, None, None),
-    ("battery_voltage", "Batarya voltaj", UnitOfElectricPotential.VOLT, SensorDeviceClass.VOLTAGE, SensorStateClass.MEASUREMENT, 2),
-    ("battery_current", "Batarya akım", UnitOfElectricCurrent.AMPERE, SensorDeviceClass.CURRENT, SensorStateClass.MEASUREMENT, 2),
-    ("battery_charging_power", "Batarya gücü", UnitOfPower.KILO_WATT, SensorDeviceClass.POWER, SensorStateClass.MEASUREMENT, 2),
-    ("station_dc_current", "İstasyon akımı", UnitOfElectricCurrent.AMPERE, SensorDeviceClass.CURRENT, SensorStateClass.MEASUREMENT, 2),
-    ("station_dc_power", "İstasyon gücü", UnitOfPower.KILO_WATT, SensorDeviceClass.POWER, SensorStateClass.MEASUREMENT, 2),
-    ("ac_voltage", "AC voltaj", UnitOfElectricPotential.VOLT, SensorDeviceClass.VOLTAGE, SensorStateClass.MEASUREMENT, 0),
-    ("ac_current", "AC akım", UnitOfElectricCurrent.AMPERE, SensorDeviceClass.CURRENT, SensorStateClass.MEASUREMENT, 1),
-    ("ac_charging_power", "AC şarj gücü", UnitOfPower.KILO_WATT, SensorDeviceClass.POWER, SensorStateClass.MEASUREMENT, 2),
+    ("last_update", None, SensorDeviceClass.TIMESTAMP, None, None),
+    ("address", None, None, None, None),
+    ("mileage", UnitOfLength.KILOMETERS, SensorDeviceClass.DISTANCE, SensorStateClass.TOTAL_INCREASING, 0),
+    ("battery", PERCENTAGE, SensorDeviceClass.BATTERY, SensorStateClass.MEASUREMENT, 1),
+    ("range", UnitOfLength.KILOMETERS, SensorDeviceClass.DISTANCE, SensorStateClass.MEASUREMENT, 0),
+    ("exterior_temperature", UnitOfTemperature.CELSIUS, SensorDeviceClass.TEMPERATURE, SensorStateClass.MEASUREMENT, 0),
+    ("tire_pressure_fl", UnitOfPressure.KPA, SensorDeviceClass.PRESSURE, SensorStateClass.MEASUREMENT, 0),
+    ("tire_pressure_fr", UnitOfPressure.KPA, SensorDeviceClass.PRESSURE, SensorStateClass.MEASUREMENT, 0),
+    ("tire_pressure_rl", UnitOfPressure.KPA, SensorDeviceClass.PRESSURE, SensorStateClass.MEASUREMENT, 0),
+    ("tire_pressure_rr", UnitOfPressure.KPA, SensorDeviceClass.PRESSURE, SensorStateClass.MEASUREMENT, 0),
+    ("charging_status", None, None, None, None),
+    ("charge_remaining", UnitOfTime.MINUTES, SensorDeviceClass.DURATION, SensorStateClass.MEASUREMENT, 0),
+    ("charge_finish", None, SensorDeviceClass.TIMESTAMP, None, None),
+    ("battery_voltage", UnitOfElectricPotential.VOLT, SensorDeviceClass.VOLTAGE, SensorStateClass.MEASUREMENT, 2),
+    ("battery_current", UnitOfElectricCurrent.AMPERE, SensorDeviceClass.CURRENT, SensorStateClass.MEASUREMENT, 2),
+    ("battery_charging_power", UnitOfPower.KILO_WATT, SensorDeviceClass.POWER, SensorStateClass.MEASUREMENT, 2),
+    ("station_dc_current", UnitOfElectricCurrent.AMPERE, SensorDeviceClass.CURRENT, SensorStateClass.MEASUREMENT, 2),
+    ("station_dc_power", UnitOfPower.KILO_WATT, SensorDeviceClass.POWER, SensorStateClass.MEASUREMENT, 2),
+    ("ac_voltage", UnitOfElectricPotential.VOLT, SensorDeviceClass.VOLTAGE, SensorStateClass.MEASUREMENT, 0),
+    ("ac_current", UnitOfElectricCurrent.AMPERE, SensorDeviceClass.CURRENT, SensorStateClass.MEASUREMENT, 1),
+    ("ac_charging_power", UnitOfPower.KILO_WATT, SensorDeviceClass.POWER, SensorStateClass.MEASUREMENT, 2),
 )
 
 
@@ -77,7 +76,6 @@ class Mg4Sensor(RestoreSensor):
         prefix: str,
         device_name: str,
         key: str,
-        name: str,
         unit,
         device_class,
         state_class,
@@ -86,14 +84,13 @@ class Mg4Sensor(RestoreSensor):
         self.hass = hass
         self._entry = entry
         self._key = key
-        self._attr_name = name
         self._attr_unique_id = f"{prefix}_{key}"
+        self._attr_translation_key = key
         self._attr_native_unit_of_measurement = unit
         self._attr_device_class = device_class
         self._attr_state_class = state_class
         self._attr_suggested_display_precision = precision
         self._attr_device_info = bridge_device(prefix, device_name)
-        self._attr_translation_key = key
         if key == "charging_status":
             self._attr_icon = "mdi:ev-station"
             self._attr_device_class = SensorDeviceClass.ENUM
@@ -108,8 +105,6 @@ class Mg4Sensor(RestoreSensor):
             ]
         if key == "address":
             self._attr_icon = "mdi:map-marker"
-        if key == "charge_limit":
-            self._attr_icon = "mdi:battery-charging-80"
 
     def _data(self) -> dict:
         return self.hass.data[DOMAIN][self._entry.entry_id]["data"]
@@ -129,7 +124,6 @@ class Mg4Sensor(RestoreSensor):
             opts = self._attr_options or []
             if val in opts:
                 return val
-            # Bilinmeyen ham kod → unknown (ham değer attribute’da)
             return "unknown"
         return val
 

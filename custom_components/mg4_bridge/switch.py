@@ -1,0 +1,97 @@
+from __future__ import annotations
+
+from datetime import datetime
+
+from homeassistant.components.switch import SwitchEntity
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.dispatcher import async_dispatcher_connect
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.util import dt as dt_util
+
+from .const import CONF_NAME, CONF_PREFIX, DOMAIN, SIGNAL_UPDATE
+from .device import bridge_device
+
+# HA switch → poll → araç onaylanana kadar eski push ile geri yazma
+PENDING_HA_GRACE_SEC = 90
+
+
+async def async_setup_entry(
+    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
+) -> None:
+    prefix = entry.data[CONF_PREFIX]
+    entity = Mg4HvacSwitch(hass, entry)
+    entity.entity_id = f"switch.{prefix}_hvac"
+    async_add_entities([entity])
+
+
+class Mg4HvacSwitch(SwitchEntity):
+    """Araba → HA: push ile senkron; HA → araba: poll ile uygular."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "hvac"
+    _attr_icon = "mdi:air-conditioner"
+    _attr_should_poll = False
+
+    def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
+        self.hass = hass
+        self._entry = entry
+        self._prefix = entry.data[CONF_PREFIX]
+        self._attr_unique_id = f"{self._prefix}_hvac"
+        self._attr_device_info = bridge_device(self._prefix, entry.data[CONF_NAME])
+        self._attr_is_on = False
+        self._pending_ha_target: bool | None = None
+        self._pending_since: datetime | None = None
+
+    def _data(self) -> dict:
+        return self.hass.data[DOMAIN][self._entry.entry_id]["data"]
+
+    async def async_added_to_hass(self) -> None:
+        raw = self._data().get("hvac")
+        if isinstance(raw, bool):
+            self._attr_is_on = raw
+        self.async_on_remove(
+            async_dispatcher_connect(
+                self.hass,
+                f"{SIGNAL_UPDATE}_{self._entry.entry_id}",
+                self._handle_update,
+            )
+        )
+
+    @callback
+    def _handle_update(self) -> None:
+        raw = self._data().get("hvac")
+        if not isinstance(raw, bool):
+            self.async_write_ha_state()
+            return
+
+        now = dt_util.utcnow()
+        if self._pending_ha_target is not None:
+            if raw == self._pending_ha_target:
+                self._pending_ha_target = None
+                self._pending_since = None
+            elif (
+                self._pending_since is not None
+                and (now - self._pending_since).total_seconds() < PENDING_HA_GRACE_SEC
+            ):
+                self.async_write_ha_state()
+                return
+            else:
+                self._pending_ha_target = None
+                self._pending_since = None
+
+        if self._attr_is_on != raw:
+            self._attr_is_on = raw
+        self.async_write_ha_state()
+
+    async def async_turn_on(self, **kwargs) -> None:
+        self._attr_is_on = True
+        self._pending_ha_target = True
+        self._pending_since = dt_util.utcnow()
+        self.async_write_ha_state()
+
+    async def async_turn_off(self, **kwargs) -> None:
+        self._attr_is_on = False
+        self._pending_ha_target = False
+        self._pending_since = dt_util.utcnow()
+        self.async_write_ha_state()

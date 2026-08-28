@@ -26,7 +26,13 @@ from .geocode import async_reverse_geocode, geocode_cache_key
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR, Platform.DEVICE_TRACKER]
+PLATFORMS = [
+    Platform.SENSOR,
+    Platform.BINARY_SENSOR,
+    Platform.DEVICE_TRACKER,
+    Platform.SWITCH,
+    Platform.NUMBER,
+]
 
 PUSH_SCHEMA = vol.Schema(
     {
@@ -35,6 +41,7 @@ PUSH_SCHEMA = vol.Schema(
         vol.Optional("demo"): cv.boolean,
         vol.Optional("battery"): vol.Coerce(float),
         vol.Optional("charge_limit"): vol.Coerce(int),
+        vol.Optional("hvac"): cv.boolean,
         vol.Optional("range"): vol.Coerce(int),
         vol.Optional("mileage"): vol.Coerce(int),
         vol.Optional("exterior_temperature"): vol.Coerce(int),

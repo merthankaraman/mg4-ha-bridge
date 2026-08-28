@@ -28,7 +28,7 @@ class Mg4Tracker(TrackerEntity, RestoreEntity):
         self._entry = entry
         self._attr_unique_id = f"{prefix}_location"
         self._attr_device_info = bridge_device(prefix, entry.data[CONF_NAME])
-        self._attr_name = "Konum"
+
     def _data(self) -> dict:
         return self.hass.data[DOMAIN][self._entry.entry_id]["data"]
 

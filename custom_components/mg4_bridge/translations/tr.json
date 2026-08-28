@@ -23,7 +23,6 @@
       "address": { "name": "Adres" },
       "mileage": { "name": "Kilometre" },
       "battery": { "name": "Şarj yüzdesi" },
-      "charge_limit": { "name": "Şarj sınırı" },
       "range": { "name": "Menzil" },
       "exterior_temperature": { "name": "Dış sıcaklık" },
       "tire_pressure_fl": { "name": "Lastik sol ön" },
@@ -55,6 +54,12 @@
     },
     "binary_sensor": {
       "charging": { "name": "Şarjda" }
+    },
+    "switch": {
+      "hvac": { "name": "Klima" }
+    },
+    "number": {
+      "charge_limit_set": { "name": "Şarj sınırı" }
     },
     "device_tracker": {
       "location": { "name": "Konum" }

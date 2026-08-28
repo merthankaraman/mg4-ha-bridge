@@ -23,7 +23,6 @@
       "address": { "name": "Address" },
       "mileage": { "name": "Odometer" },
       "battery": { "name": "State of charge" },
-      "charge_limit": { "name": "Charge limit" },
       "range": { "name": "Range" },
       "exterior_temperature": { "name": "Exterior temperature" },
       "tire_pressure_fl": { "name": "Tire front left" },
@@ -55,6 +54,12 @@
     },
     "binary_sensor": {
       "charging": { "name": "Charging" }
+    },
+    "switch": {
+      "hvac": { "name": "Climate" }
+    },
+    "number": {
+      "charge_limit_set": { "name": "Charge limit" }
     },
     "device_tracker": {
       "location": { "name": "Location" }
