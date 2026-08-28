@@ -42,6 +42,7 @@ PUSH_SCHEMA = vol.Schema(
         vol.Optional("battery"): vol.Coerce(float),
         vol.Optional("charge_limit"): vol.Coerce(int),
         vol.Optional("hvac"): cv.boolean,
+        vol.Optional("hvac_temp"): vol.Coerce(int),
         vol.Optional("range"): vol.Coerce(int),
         vol.Optional("mileage"): vol.Coerce(int),
         vol.Optional("exterior_temperature"): vol.Coerce(int),

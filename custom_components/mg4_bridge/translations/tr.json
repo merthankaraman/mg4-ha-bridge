@@ -59,7 +59,8 @@
       "hvac": { "name": "Klima" }
     },
     "number": {
-      "charge_limit_set": { "name": "Şarj sınırı" }
+      "charge_limit_set": { "name": "Şarj sınırı" },
+      "hvac_temperature_set": { "name": "Kabin sıcaklığı" }
     },
     "device_tracker": {
       "location": { "name": "Konum" }

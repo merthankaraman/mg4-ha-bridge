@@ -7,7 +7,7 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
 
-from .const import CONF_NAME, CONF_PREFIX, DOMAIN, ENTITY_DEVICE_TRACKER_NAMES, SIGNAL_UPDATE
+from .const import CONF_NAME, CONF_PREFIX, DOMAIN, SIGNAL_UPDATE
 from .device import bridge_device
 
 
@@ -21,7 +21,6 @@ class Mg4Tracker(TrackerEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_should_poll = False
     _attr_translation_key = "location"
-    _attr_name = ENTITY_DEVICE_TRACKER_NAMES["location"]
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         prefix = entry.data[CONF_PREFIX]
