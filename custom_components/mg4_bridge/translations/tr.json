@@ -60,7 +60,8 @@
     },
     "number": {
       "charge_limit_set": { "name": "Şarj sınırı" },
-      "hvac_temperature_set": { "name": "Kabin sıcaklığı" }
+      "hvac_temperature_set": { "name": "Kabin sıcaklığı" },
+      "media_volume_set": { "name": "Multimedya sesi" }
     },
     "device_tracker": {
       "location": { "name": "Konum" }

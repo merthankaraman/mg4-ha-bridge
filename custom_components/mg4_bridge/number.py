@@ -33,7 +33,9 @@ async def async_setup_entry(
     charge.entity_id = f"number.{prefix}_charge_limit"
     hvac_temp = Mg4HvacTemperatureNumber(hass, entry)
     hvac_temp.entity_id = f"number.{prefix}_hvac_temperature"
-    async_add_entities([charge, hvac_temp])
+    media_volume = Mg4MediaVolumeNumber(hass, entry)
+    media_volume.entity_id = f"number.{prefix}_media_volume"
+    async_add_entities([charge, hvac_temp, media_volume])
 
 
 class Mg4ChargeLimitNumber(NumberEntity):
@@ -226,4 +228,106 @@ class Mg4HvacTemperatureNumber(NumberEntity):
         self._attr_native_value = temp
         self._pending_ha_target = int(temp)
         self._pending_car_value = self._car_hvac_temp()
+        self.async_write_ha_state()
+
+
+MEDIA_VOLUME_MIN = 0
+MEDIA_VOLUME_MAX = 32
+MEDIA_VOLUME_STEP = 1
+
+
+def normalize_media_volume(value: float | int) -> float | None:
+    try:
+        level = int(round(float(value)))
+        level = max(MEDIA_VOLUME_MIN, min(MEDIA_VOLUME_MAX, level))
+        return float(level)
+    except (TypeError, ValueError):
+        return None
+
+
+class Mg4MediaVolumeNumber(NumberEntity):
+    """Araba → HA: push ile senkron; HA → araba: poll hedefi uygular."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "media_volume_set"
+    _attr_icon = "mdi:volume-high"
+    _attr_mode = NumberMode.SLIDER
+    _attr_native_min_value = float(MEDIA_VOLUME_MIN)
+    _attr_native_max_value = float(MEDIA_VOLUME_MAX)
+    _attr_native_step = float(MEDIA_VOLUME_STEP)
+    _attr_should_poll = False
+
+    def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
+        self.hass = hass
+        self._entry = entry
+        self._prefix = entry.data[CONF_PREFIX]
+        self._attr_unique_id = f"{self._prefix}_media_volume_set"
+        self._attr_device_info = bridge_device(self._prefix, entry.data[CONF_NAME])
+        self._attr_native_value = 16.0
+        self._pending_ha_target: int | None = None
+        self._pending_car_value: int | None = None
+        self._last_car_value: int | None = None
+
+    def _data(self) -> dict:
+        return self.hass.data[DOMAIN][self._entry.entry_id]["data"]
+
+    def _car_media_volume(self) -> int | None:
+        raw = self._data().get("media_volume")
+        if raw is None:
+            return self._last_car_value
+        level = normalize_media_volume(raw)
+        return int(level) if level is not None else self._last_car_value
+
+    async def async_added_to_hass(self) -> None:
+        raw = self._data().get("media_volume")
+        if raw is not None:
+            level = normalize_media_volume(raw)
+            if level is not None:
+                self._attr_native_value = level
+                self._last_car_value = int(level)
+        self.async_on_remove(
+            async_dispatcher_connect(
+                self.hass,
+                f"{SIGNAL_UPDATE}_{self._entry.entry_id}",
+                self._handle_update,
+            )
+        )
+
+    @callback
+    def _handle_update(self) -> None:
+        raw = self._data().get("media_volume")
+        if raw is None:
+            self.async_write_ha_state()
+            return
+        level = normalize_media_volume(raw)
+        if level is None:
+            return
+        car_level = int(level)
+
+        if self._pending_ha_target is not None:
+            if car_level == self._pending_ha_target:
+                self._pending_ha_target = None
+                self._pending_car_value = None
+            elif (
+                self._pending_car_value is not None
+                and car_level != self._pending_car_value
+            ):
+                self._pending_ha_target = None
+                self._pending_car_value = None
+            else:
+                self.async_write_ha_state()
+                return
+
+        if self._attr_native_value != level:
+            self._attr_native_value = level
+        self._last_car_value = car_level
+        self.async_write_ha_state()
+
+    async def async_set_native_value(self, value: float) -> None:
+        level = normalize_media_volume(value)
+        if level is None:
+            return
+        self._attr_native_value = level
+        self._pending_ha_target = int(level)
+        self._pending_car_value = self._car_media_volume()
         self.async_write_ha_state()

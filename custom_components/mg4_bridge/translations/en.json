@@ -42,7 +42,8 @@
     },
     "number": {
       "charge_limit_set": { "name": "Charge limit" },
-      "hvac_temperature_set": { "name": "Cabin temperature" }
+      "hvac_temperature_set": { "name": "Cabin temperature" },
+      "media_volume_set": { "name": "Media volume" }
     },
     "device_tracker": {
       "location": { "name": "Location" }
