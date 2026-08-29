@@ -21,6 +21,7 @@
   "entity": {
     "sensor": {
       "last_update": { "name": "Last update" },
+      "vehicle_last_run": { "name": "Vehicle last run" },
       "address": { "name": "Address" },
       "mileage": { "name": "Odometer" },
       "battery": { "name": "State of charge" },
@@ -54,16 +55,22 @@
       "ac_charging_power": { "name": "AC charge power" }
     },
     "binary_sensor": {
-      "charging": { "name": "Charging" }
+      "vehicle_ready": { "name": "Vehicle running" }
     },
     "switch": {
-      "hvac": { "name": "Climate" }
+      "hvac": { "name": "Climate" },
+      "charging": { "name": "Charge" }
+    },
+    "button": {
+      "refresh": { "name": "Refresh" }
     },
     "number": {
       "charge_limit_set": { "name": "Charge limit" },
       "hvac_temperature_set": { "name": "Cabin temperature" },
       "hvac_fan_set": { "name": "Climate fan (12=Auto)" },
-      "media_volume_set": { "name": "Media volume" }
+      "media_volume_set": { "name": "Media volume" },
+      "interval_normal": { "name": "Push interval (min)" },
+      "interval_charging": { "name": "Charging push interval (sec)" }
     },
     "device_tracker": {
       "location": { "name": "Location" }

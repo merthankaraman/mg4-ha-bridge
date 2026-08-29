@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from homeassistant.components.number import NumberEntity, NumberMode
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import PERCENTAGE, UnitOfTemperature
+from homeassistant.const import PERCENTAGE, UnitOfTemperature, UnitOfTime
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -18,6 +18,12 @@ DEFAULT_CHARGE_LIMIT = 100.0
 DEFAULT_HVAC_TEMP = 23.0
 DEFAULT_MEDIA_VOLUME = 4.0
 DEFAULT_HVAC_FAN = 12.0  # auto
+INTERVAL_MIN = 1
+INTERVAL_MAX = 1440
+INTERVAL_STEP = 1
+DEFAULT_INTERVAL_NORMAL = 10.0
+DEFAULT_INTERVAL_CHARGING = 60.0  # seconds
+INTERVAL_CHARGING_MAX = 3600
 
 
 def normalize_charge_limit_pct(value: float | int) -> float | None:
@@ -41,7 +47,26 @@ async def async_setup_entry(
     media_volume.entity_id = f"number.{prefix}_media_volume"
     hvac_fan = Mg4HvacFanNumber(hass, entry)
     hvac_fan.entity_id = f"number.{prefix}_hvac_fan"
-    async_add_entities([charge, hvac_temp, media_volume, hvac_fan])
+    interval_normal = Mg4IntervalNumber(
+        hass, entry, "interval_normal", "interval_normal", DEFAULT_INTERVAL_NORMAL,
+        INTERVAL_MIN, INTERVAL_MAX, UnitOfTime.MINUTES,
+    )
+    interval_normal.entity_id = f"number.{prefix}_interval_normal"
+    interval_charging = Mg4IntervalNumber(
+        hass, entry, "interval_charging", "interval_charging", DEFAULT_INTERVAL_CHARGING,
+        INTERVAL_MIN, INTERVAL_CHARGING_MAX, UnitOfTime.SECONDS,
+    )
+    interval_charging.entity_id = f"number.{prefix}_interval_charging"
+    async_add_entities(
+        [
+            charge,
+            hvac_temp,
+            media_volume,
+            hvac_fan,
+            interval_normal,
+            interval_charging,
+        ]
+    )
 
 
 class Mg4ChargeLimitNumber(Mg4CarSyncedMixin, NumberEntity):
@@ -447,4 +472,113 @@ class Mg4HvacFanNumber(Mg4CarSyncedMixin, NumberEntity):
         self._attr_native_value = level
         self._pending_ha_target = int(level)
         self._pending_car_value = self._car_hvac_fan()
+        self.async_write_ha_state()
+
+
+def normalize_interval(value: float | int, min_v: int, max_v: int) -> float | None:
+    try:
+        n = int(round(float(value)))
+        n = max(min_v, min(max_v, n))
+        return float(n)
+    except (TypeError, ValueError):
+        return None
+
+
+class Mg4IntervalNumber(NumberEntity):
+    """Push aralığı — HA ↔ araba ortak; her zaman kullanılabilir."""
+
+    _attr_has_entity_name = True
+    _attr_icon = "mdi:timer-outline"
+    _attr_mode = NumberMode.BOX
+    _attr_native_step = float(INTERVAL_STEP)
+    _attr_should_poll = False
+
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        entry: ConfigEntry,
+        data_key: str,
+        translation_key: str,
+        default: float,
+        min_value: int,
+        max_value: int,
+        unit: str,
+    ) -> None:
+        self.hass = hass
+        self._entry = entry
+        self._data_key = data_key
+        self._min = min_value
+        self._max = max_value
+        self._prefix = entry.data[CONF_PREFIX]
+        self._attr_unique_id = f"{self._prefix}_{data_key}"
+        self._attr_translation_key = translation_key
+        self._attr_device_info = bridge_device(self._prefix, entry.data[CONF_NAME])
+        self._attr_native_min_value = float(min_value)
+        self._attr_native_max_value = float(max_value)
+        self._attr_native_unit_of_measurement = unit
+        self._attr_native_value = default
+        self._pending_ha_target: int | None = None
+        self._pending_car_value: int | None = None
+
+    def _data(self) -> dict:
+        return self.hass.data[DOMAIN][self._entry.entry_id]["data"]
+
+    def _car_interval(self) -> int | None:
+        raw = self._data().get(self._data_key)
+        if raw is None:
+            return None
+        val = normalize_interval(raw, self._min, self._max)
+        return int(val) if val is not None else None
+
+    async def async_added_to_hass(self) -> None:
+        raw = self._data().get(self._data_key)
+        if raw is not None:
+            val = normalize_interval(raw, self._min, self._max)
+            if val is not None:
+                self._attr_native_value = val
+        self.async_on_remove(
+            async_dispatcher_connect(
+                self.hass,
+                f"{SIGNAL_UPDATE}_{self._entry.entry_id}",
+                self._handle_update,
+            )
+        )
+
+    @callback
+    def _handle_update(self) -> None:
+        raw = self._data().get(self._data_key)
+        if raw is None:
+            self.async_write_ha_state()
+            return
+        val = normalize_interval(raw, self._min, self._max)
+        if val is None:
+            return
+        car_val = int(val)
+
+        if self._pending_ha_target is not None:
+            if car_val == self._pending_ha_target:
+                self._pending_ha_target = None
+                self._pending_car_value = None
+            elif (
+                self._pending_car_value is not None
+                and car_val != self._pending_car_value
+            ):
+                self._pending_ha_target = None
+                self._pending_car_value = None
+            else:
+                self.async_write_ha_state()
+                return
+
+        if self._attr_native_value != val:
+            self._attr_native_value = val
+        self.async_write_ha_state()
+
+    async def async_set_native_value(self, value: float) -> None:
+        val = normalize_interval(value, self._min, self._max)
+        if val is None:
+            return
+        self._attr_native_value = val
+        self._pending_ha_target = int(val)
+        self._pending_car_value = self._car_interval()
+        self._data()[self._data_key] = int(val)
         self.async_write_ha_state()

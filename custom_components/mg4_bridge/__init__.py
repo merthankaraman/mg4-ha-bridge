@@ -32,6 +32,7 @@ PLATFORMS = [
     Platform.DEVICE_TRACKER,
     Platform.SWITCH,
     Platform.NUMBER,
+    Platform.BUTTON,
 ]
 
 PUSH_SCHEMA = vol.Schema(
@@ -54,6 +55,10 @@ PUSH_SCHEMA = vol.Schema(
         vol.Optional("tire_pressure_rr"): vol.Coerce(int),
         vol.Optional("charging"): cv.boolean,
         vol.Optional("charging_status"): cv.string,
+        vol.Optional("vehicle_ready"): cv.boolean,
+        vol.Optional("vehicle_last_run"): cv.string,
+        vol.Optional("interval_normal"): vol.Coerce(int),
+        vol.Optional("interval_charging"): vol.Coerce(int),
         vol.Optional("battery_voltage"): vol.Coerce(float),
         vol.Optional("battery_current"): vol.Coerce(float),
         vol.Optional("battery_charging_power"): vol.Coerce(float),

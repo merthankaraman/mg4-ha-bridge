@@ -32,6 +32,7 @@ SENSORS: tuple[
     ...,
 ] = (
     ("last_update", None, SensorDeviceClass.TIMESTAMP, None, None),
+    ("vehicle_last_run", None, SensorDeviceClass.TIMESTAMP, None, None),
     ("address", None, None, None, None),
     ("mileage", UnitOfLength.KILOMETERS, SensorDeviceClass.DISTANCE, SensorStateClass.TOTAL_INCREASING, 0),
     ("battery", PERCENTAGE, SensorDeviceClass.BATTERY, SensorStateClass.MEASUREMENT, 1),
@@ -105,6 +106,8 @@ class Mg4Sensor(RestoreSensor):
             ]
         if key == "address":
             self._attr_icon = "mdi:map-marker"
+        if key == "vehicle_last_run":
+            self._attr_icon = "mdi:clock-outline"
 
     def _data(self) -> dict:
         return self.hass.data[DOMAIN][self._entry.entry_id]["data"]
@@ -113,6 +116,9 @@ class Mg4Sensor(RestoreSensor):
     def native_value(self):
         val = self._data().get(self._key)
         if self._key == "last_update" and isinstance(val, str):
+            parsed = dt_util.parse_datetime(val)
+            return parsed if parsed is not None else val
+        if self._key == "vehicle_last_run" and isinstance(val, str):
             parsed = dt_util.parse_datetime(val)
             return parsed if parsed is not None else val
         if self._key == "charge_finish" and isinstance(val, str):

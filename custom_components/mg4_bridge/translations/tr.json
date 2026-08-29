@@ -21,6 +21,7 @@
   "entity": {
     "sensor": {
       "last_update": { "name": "Son güncelleme" },
+      "vehicle_last_run": { "name": "Araç son çalışma vakti" },
       "address": { "name": "Adres" },
       "mileage": { "name": "Kilometre" },
       "battery": { "name": "Şarj yüzdesi" },
@@ -54,16 +55,22 @@
       "ac_charging_power": { "name": "AC şarj gücü" }
     },
     "binary_sensor": {
-      "charging": { "name": "Şarjda" }
+      "vehicle_ready": { "name": "Araç çalışıyor" }
     },
     "switch": {
-      "hvac": { "name": "Klima" }
+      "hvac": { "name": "Klima" },
+      "charging": { "name": "Şarj" }
+    },
+    "button": {
+      "refresh": { "name": "Güncelle" }
     },
     "number": {
       "charge_limit_set": { "name": "Şarj sınırı" },
       "hvac_temperature_set": { "name": "Kabin sıcaklığı" },
       "hvac_fan_set": { "name": "Klima fanı (12=Otomatik)" },
-      "media_volume_set": { "name": "Multimedya sesi" }
+      "media_volume_set": { "name": "Multimedya sesi" },
+      "interval_normal": { "name": "Güncelleme aralığı (dk)" },
+      "interval_charging": { "name": "Şarjda güncelleme aralığı (sn)" }
     },
     "device_tracker": {
       "location": { "name": "Konum" }

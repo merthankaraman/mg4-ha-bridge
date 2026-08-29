@@ -17,20 +17,21 @@ from .device import bridge_device
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
-    async_add_entities([Mg4ChargingBinary(hass, entry)])
+    async_add_entities([Mg4VehicleReadyBinary(hass, entry)])
 
 
-class Mg4ChargingBinary(BinarySensorEntity, RestoreEntity):
+class Mg4VehicleReadyBinary(BinarySensorEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_should_poll = False
-    _attr_translation_key = "charging"
-    _attr_device_class = BinarySensorDeviceClass.BATTERY_CHARGING
+    _attr_translation_key = "vehicle_ready"
+    _attr_icon = "mdi:car-electric"
+    _attr_device_class = BinarySensorDeviceClass.RUNNING
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         prefix = entry.data[CONF_PREFIX]
         self.hass = hass
         self._entry = entry
-        self._attr_unique_id = f"{prefix}_charging"
+        self._attr_unique_id = f"{prefix}_vehicle_ready"
         self._attr_device_info = bridge_device(prefix, entry.data[CONF_NAME])
 
     def _data(self) -> dict:
@@ -39,9 +40,9 @@ class Mg4ChargingBinary(BinarySensorEntity, RestoreEntity):
     @property
     def is_on(self) -> bool | None:
         data = self._data()
-        if "charging" not in data:
+        if "vehicle_ready" not in data:
             return None
-        return bool(data.get("charging"))
+        return bool(data.get("vehicle_ready"))
 
     @property
     def available(self) -> bool:
@@ -50,8 +51,8 @@ class Mg4ChargingBinary(BinarySensorEntity, RestoreEntity):
 
     async def async_added_to_hass(self) -> None:
         last = await self.async_get_last_state()
-        if last is not None and "charging" not in self._data():
-            self._data()["charging"] = last.state == "on"
+        if last is not None and "vehicle_ready" not in self._data():
+            self._data()["vehicle_ready"] = last.state == "on"
         self.async_on_remove(
             async_dispatcher_connect(
                 self.hass, f"{SIGNAL_UPDATE}_{self._entry.entry_id}", self._handle_update
