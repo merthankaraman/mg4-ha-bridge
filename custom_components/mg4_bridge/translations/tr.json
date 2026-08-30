@@ -43,6 +43,22 @@
           "unknown": "Bilinmiyor"
         }
       },
+      "command_feedback": {
+        "name": "Komut sonucu",
+        "state": {
+          "idle": "Bekliyor",
+          "ok": "Başarılı",
+          "fail": "Başarısız"
+        },
+        "state_attributes": {
+          "command": { "name": "Komut" },
+          "command_label": { "name": "Komut adı" },
+          "detail": { "name": "Ayrıntı" },
+          "detail_key": { "name": "Ayrıntı anahtarı" },
+          "detail_arg": { "name": "Ayrıntı değeri" },
+          "at": { "name": "Zaman" }
+        }
+      },
       "charge_remaining": { "name": "Kalan şarj süresi" },
       "charge_finish": { "name": "Şarj bitiş saati" },
       "battery_voltage": { "name": "Batarya voltaj" },
@@ -74,6 +90,34 @@
     },
     "device_tracker": {
       "location": { "name": "Konum" }
+    }
+  },
+  "command_feedback": {
+    "detail": {
+      "requested": "güncelleme istendi",
+      "on": "aç",
+      "off": "kapat",
+      "start": "başlat",
+      "stop": "durdur",
+      "auto": "otomatik",
+      "set": "{arg} olarak ayarlandı",
+      "set_min": "{arg} dk olarak ayarlandı",
+      "set_sec": "{arg} sn olarak ayarlandı",
+      "invalid": "geçersiz değer: {arg}",
+      "write_failed": "yazılamadı → {arg}",
+      "verify_unread": "yazıldı ama durum okunamadı",
+      "verify_mismatch": "yazıldı ama araç {arg}"
+    },
+    "command": {
+      "refresh": "Güncelle",
+      "hvac": "Klima",
+      "charging": "Şarj",
+      "hvac_temp": "Kabin sıcaklığı",
+      "hvac_fan": "Klima fanı",
+      "media_volume": "Multimedya sesi",
+      "charge_limit": "Şarj sınırı",
+      "interval_normal": "Güncelleme aralığı",
+      "interval_charging": "Şarjda güncelleme aralığı"
     }
   }
 }

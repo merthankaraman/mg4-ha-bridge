@@ -10,6 +10,35 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .const import CONF_NAME, CONF_PREFIX, DOMAIN, SIGNAL_UPDATE
 from .device import Mg4CarSyncedMixin, bridge_device
 
+
+def _command_failed(data: dict, command: str) -> bool:
+    return data.get("command_feedback") == "fail" and data.get("command_name") == command
+
+
+def _resolve_pending(
+    entity, data: dict, command: str, car_value
+) -> bool:
+    """Pending varsa işle. True = hâlâ bekleniyor, car sync atlanmalı."""
+    if entity._pending_ha_target is None:
+        return False
+    if _command_failed(data, command):
+        entity._pending_ha_target = None
+        entity._pending_car_value = None
+        return False
+    if car_value == entity._pending_ha_target:
+        entity._pending_ha_target = None
+        entity._pending_car_value = None
+        return False
+    if (
+        entity._pending_car_value is not None
+        and car_value != entity._pending_car_value
+    ):
+        entity._pending_ha_target = None
+        entity._pending_car_value = None
+        return False
+    return True
+
+
 # Araç ham değer 1..7 → %40..%100 (40 + (n-1)*10)
 CHARGE_LIMIT_MIN = 40
 CHARGE_LIMIT_MAX = 100
@@ -121,7 +150,8 @@ class Mg4ChargeLimitNumber(Mg4CarSyncedMixin, NumberEntity):
 
     @callback
     def _handle_update(self) -> None:
-        raw = self._data().get("charge_limit")
+        data = self._data()
+        raw = data.get("charge_limit")
         if raw is None:
             self.async_write_ha_state()
             return
@@ -130,20 +160,9 @@ class Mg4ChargeLimitNumber(Mg4CarSyncedMixin, NumberEntity):
             return
         car_pct = int(pct)
 
-        if self._pending_ha_target is not None:
-            if car_pct == self._pending_ha_target:
-                self._pending_ha_target = None
-                self._pending_car_value = None
-            elif (
-                self._pending_car_value is not None
-                and car_pct != self._pending_car_value
-            ):
-                # Arabada değer değişti → hemen senkron
-                self._pending_ha_target = None
-                self._pending_car_value = None
-            else:
-                self.async_write_ha_state()
-                return
+        if _resolve_pending(self, data, "charge_limit", car_pct):
+            self.async_write_ha_state()
+            return
 
         if self._attr_native_value != pct:
             self._attr_native_value = pct
@@ -226,7 +245,8 @@ class Mg4HvacTemperatureNumber(Mg4CarSyncedMixin, NumberEntity):
 
     @callback
     def _handle_update(self) -> None:
-        raw = self._data().get("hvac_temp")
+        data = self._data()
+        raw = data.get("hvac_temp")
         if raw is None:
             self.async_write_ha_state()
             return
@@ -235,19 +255,9 @@ class Mg4HvacTemperatureNumber(Mg4CarSyncedMixin, NumberEntity):
             return
         car_temp = int(temp)
 
-        if self._pending_ha_target is not None:
-            if car_temp == self._pending_ha_target:
-                self._pending_ha_target = None
-                self._pending_car_value = None
-            elif (
-                self._pending_car_value is not None
-                and car_temp != self._pending_car_value
-            ):
-                self._pending_ha_target = None
-                self._pending_car_value = None
-            else:
-                self.async_write_ha_state()
-                return
+        if _resolve_pending(self, data, "hvac_temp", car_temp):
+            self.async_write_ha_state()
+            return
 
         if self._attr_native_value != temp:
             self._attr_native_value = temp
@@ -329,7 +339,8 @@ class Mg4MediaVolumeNumber(Mg4CarSyncedMixin, NumberEntity):
 
     @callback
     def _handle_update(self) -> None:
-        raw = self._data().get("media_volume")
+        data = self._data()
+        raw = data.get("media_volume")
         if raw is None:
             self.async_write_ha_state()
             return
@@ -338,19 +349,9 @@ class Mg4MediaVolumeNumber(Mg4CarSyncedMixin, NumberEntity):
             return
         car_level = int(level)
 
-        if self._pending_ha_target is not None:
-            if car_level == self._pending_ha_target:
-                self._pending_ha_target = None
-                self._pending_car_value = None
-            elif (
-                self._pending_car_value is not None
-                and car_level != self._pending_car_value
-            ):
-                self._pending_ha_target = None
-                self._pending_car_value = None
-            else:
-                self.async_write_ha_state()
-                return
+        if _resolve_pending(self, data, "media_volume", car_level):
+            self.async_write_ha_state()
+            return
 
         if self._attr_native_value != level:
             self._attr_native_value = level
@@ -437,7 +438,8 @@ class Mg4HvacFanNumber(Mg4CarSyncedMixin, NumberEntity):
 
     @callback
     def _handle_update(self) -> None:
-        raw = self._data().get("hvac_fan")
+        data = self._data()
+        raw = data.get("hvac_fan")
         if raw is None:
             self.async_write_ha_state()
             return
@@ -446,19 +448,9 @@ class Mg4HvacFanNumber(Mg4CarSyncedMixin, NumberEntity):
             return
         car_level = int(level)
 
-        if self._pending_ha_target is not None:
-            if car_level == self._pending_ha_target:
-                self._pending_ha_target = None
-                self._pending_car_value = None
-            elif (
-                self._pending_car_value is not None
-                and car_level != self._pending_car_value
-            ):
-                self._pending_ha_target = None
-                self._pending_car_value = None
-            else:
-                self.async_write_ha_state()
-                return
+        if _resolve_pending(self, data, "hvac_fan", car_level):
+            self.async_write_ha_state()
+            return
 
         if self._attr_native_value != level:
             self._attr_native_value = level

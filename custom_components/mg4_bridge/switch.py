@@ -21,6 +21,10 @@ async def async_setup_entry(
     async_add_entities([hvac, charging])
 
 
+def _command_failed(data: dict, command: str) -> bool:
+    return data.get("command_feedback") == "fail" and data.get("command_name") == command
+
+
 class Mg4HvacSwitch(Mg4CarSyncedMixin, SwitchEntity):
     """Araba → HA: push ile senkron; HA → araba: poll ile uygular."""
 
@@ -64,12 +68,17 @@ class Mg4HvacSwitch(Mg4CarSyncedMixin, SwitchEntity):
 
     @callback
     def _handle_update(self) -> None:
-        raw = self._data().get("hvac")
+        data = self._data()
+        raw = data.get("hvac")
         if not isinstance(raw, bool):
             self.async_write_ha_state()
             return
 
-        if self._pending_ha_target is not None:
+        # Araba yazımı doğrulanamadı → pending bırakma, arabaya çek
+        if self._pending_ha_target is not None and _command_failed(data, "hvac"):
+            self._pending_ha_target = None
+            self._pending_car_value = None
+        elif self._pending_ha_target is not None:
             if raw == self._pending_ha_target:
                 self._pending_ha_target = None
                 self._pending_car_value = None
@@ -144,12 +153,16 @@ class Mg4ChargingSwitch(Mg4CarSyncedMixin, SwitchEntity):
 
     @callback
     def _handle_update(self) -> None:
-        raw = self._data().get("charging")
+        data = self._data()
+        raw = data.get("charging")
         if not isinstance(raw, bool):
             self.async_write_ha_state()
             return
 
-        if self._pending_ha_target is not None:
+        if self._pending_ha_target is not None and _command_failed(data, "charging"):
+            self._pending_ha_target = None
+            self._pending_car_value = None
+        elif self._pending_ha_target is not None:
             if raw == self._pending_ha_target:
                 self._pending_ha_target = None
                 self._pending_car_value = None

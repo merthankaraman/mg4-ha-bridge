@@ -25,6 +25,7 @@ from homeassistant.util import dt as dt_util
 
 from .const import CONF_NAME, CONF_PREFIX, DOMAIN, SIGNAL_UPDATE
 from .device import bridge_device
+from .command_feedback import localize_command, localize_detail
 
 # key, unit, device_class, state_class, suggested_display_precision
 SENSORS: tuple[
@@ -33,6 +34,7 @@ SENSORS: tuple[
 ] = (
     ("last_update", None, SensorDeviceClass.TIMESTAMP, None, None),
     ("vehicle_last_run", None, SensorDeviceClass.TIMESTAMP, None, None),
+    ("command_feedback", None, None, None, None),
     ("address", None, None, None, None),
     ("mileage", UnitOfLength.KILOMETERS, SensorDeviceClass.DISTANCE, SensorStateClass.TOTAL_INCREASING, 0),
     ("battery", PERCENTAGE, SensorDeviceClass.BATTERY, SensorStateClass.MEASUREMENT, 1),
@@ -108,6 +110,10 @@ class Mg4Sensor(RestoreSensor):
             self._attr_icon = "mdi:map-marker"
         if key == "vehicle_last_run":
             self._attr_icon = "mdi:clock-outline"
+        if key == "command_feedback":
+            self._attr_icon = "mdi:message-reply-text"
+            self._attr_device_class = SensorDeviceClass.ENUM
+            self._attr_options = ["idle", "ok", "fail"]
 
     def _data(self) -> dict:
         return self.hass.data[DOMAIN][self._entry.entry_id]["data"]
@@ -131,15 +137,47 @@ class Mg4Sensor(RestoreSensor):
             if val in opts:
                 return val
             return "unknown"
+        if self._key == "command_feedback":
+            val = self._data().get(self._key)
+            if not isinstance(val, str) or val not in (self._attr_options or []):
+                return "idle"
+            return val
         return val
 
     @property
     def extra_state_attributes(self):
-        if self._key != "charging_status":
+        if self._key == "charging_status":
+            raw = self._data().get(self._key)
+            if isinstance(raw, str) and raw not in (self._attr_options or []):
+                return {"raw_status": raw}
             return None
-        raw = self._data().get(self._key)
-        if isinstance(raw, str) and raw not in (self._attr_options or []):
-            return {"raw_status": raw}
+        if self._key == "command_feedback":
+            data = self._data()
+            attrs: dict = {}
+            cmd = data.get("command_name")
+            if cmd:
+                attrs["command"] = cmd
+                label = localize_command(self.hass, str(cmd))
+                if label:
+                    attrs["command_label"] = label
+            key = data.get("command_detail_key")
+            arg = data.get("command_detail_arg")
+            if key:
+                attrs["detail_key"] = key
+                if arg:
+                    attrs["detail_arg"] = arg
+                detail = localize_detail(
+                    self.hass,
+                    str(key),
+                    str(arg) if arg is not None else None,
+                )
+                if detail:
+                    attrs["detail"] = detail
+            at = data.get("command_at")
+            if isinstance(at, str):
+                parsed = dt_util.parse_datetime(at)
+                attrs["at"] = parsed.isoformat() if parsed is not None else at
+            return attrs or None
         return None
 
     @property
@@ -151,6 +189,8 @@ class Mg4Sensor(RestoreSensor):
             return self._key in data and data.get("charge_remaining", 0) not in (0, None)
         if self._key == "address":
             return self._key in data and bool(data.get("address"))
+        if self._key == "command_feedback":
+            return True
         return self._key in data
 
     async def async_added_to_hass(self) -> None:

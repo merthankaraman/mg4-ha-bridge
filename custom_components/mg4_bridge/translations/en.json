@@ -43,6 +43,22 @@
           "unknown": "Unknown"
         }
       },
+      "command_feedback": {
+        "name": "Command result",
+        "state": {
+          "idle": "Idle",
+          "ok": "Success",
+          "fail": "Failed"
+        },
+        "state_attributes": {
+          "command": { "name": "Command" },
+          "command_label": { "name": "Command label" },
+          "detail": { "name": "Detail" },
+          "detail_key": { "name": "Detail key" },
+          "detail_arg": { "name": "Detail arg" },
+          "at": { "name": "Time" }
+        }
+      },
       "charge_remaining": { "name": "Charge remaining" },
       "charge_finish": { "name": "Charge finish time" },
       "battery_voltage": { "name": "Battery voltage" },
@@ -74,6 +90,34 @@
     },
     "device_tracker": {
       "location": { "name": "Location" }
+    }
+  },
+  "command_feedback": {
+    "detail": {
+      "requested": "refresh requested",
+      "on": "on",
+      "off": "off",
+      "start": "start",
+      "stop": "stop",
+      "auto": "auto",
+      "set": "set to {arg}",
+      "set_min": "set to {arg} min",
+      "set_sec": "set to {arg} sec",
+      "invalid": "invalid value: {arg}",
+      "write_failed": "write failed → {arg}",
+      "verify_unread": "written but could not read back",
+      "verify_mismatch": "written but car is {arg}"
+    },
+    "command": {
+      "refresh": "Refresh",
+      "hvac": "Climate",
+      "charging": "Charge",
+      "hvac_temp": "Cabin temperature",
+      "hvac_fan": "Climate fan",
+      "media_volume": "Media volume",
+      "charge_limit": "Charge limit",
+      "interval_normal": "Normal interval",
+      "interval_charging": "Charging interval"
     }
   }
 }
