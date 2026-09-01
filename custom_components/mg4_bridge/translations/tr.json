@@ -21,6 +21,20 @@
   "entity": {
     "sensor": {
       "last_update": { "name": "Son güncelleme" },
+      "update_reason": {
+        "name": "Güncelleme sebebi",
+        "state": {
+          "periodic": "Zamanlanmış aralık",
+          "startup": "Servis başladı",
+          "wifi": "WiFi bağlandı",
+          "vehicle_ready": "Araç çalışır durumda",
+          "car_changed": "Araçta değişim",
+          "ha_command": "Home Assistant komutu",
+          "manual": "Elle güncelleme",
+          "retry": "Yeniden deneme",
+          "unknown": "Bilinmiyor"
+        }
+      },
       "vehicle_last_run": { "name": "Araç son çalışma vakti" },
       "address": { "name": "Adres" },
       "mileage": { "name": "Kilometre" },

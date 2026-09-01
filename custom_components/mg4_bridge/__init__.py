@@ -74,6 +74,7 @@ PUSH_SCHEMA = vol.Schema(
         vol.Optional("ac_charging_power"): vol.Coerce(float),
         vol.Optional("charge_remaining"): vol.Coerce(int),
         vol.Optional("last_update"): cv.string,
+        vol.Optional("update_reason"): cv.string,
         vol.Optional("latitude"): vol.Coerce(float),
         vol.Optional("longitude"): vol.Coerce(float),
         vol.Optional("gps_accuracy"): vol.Coerce(float),

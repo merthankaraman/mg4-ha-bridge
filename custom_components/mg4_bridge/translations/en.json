@@ -21,6 +21,20 @@
   "entity": {
     "sensor": {
       "last_update": { "name": "Last update" },
+      "update_reason": {
+        "name": "Update reason",
+        "state": {
+          "periodic": "Scheduled interval",
+          "startup": "Service started",
+          "wifi": "Wi-Fi connected",
+          "vehicle_ready": "Vehicle ready",
+          "car_changed": "Changed on vehicle",
+          "ha_command": "Home Assistant command",
+          "manual": "Manual refresh",
+          "retry": "Retry",
+          "unknown": "Unknown"
+        }
+      },
       "vehicle_last_run": { "name": "Vehicle last run" },
       "address": { "name": "Address" },
       "mileage": { "name": "Odometer" },

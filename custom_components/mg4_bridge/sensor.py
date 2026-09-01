@@ -33,6 +33,7 @@ SENSORS: tuple[
     ...,
 ] = (
     ("last_update", None, SensorDeviceClass.TIMESTAMP, None, None),
+    ("update_reason", None, None, None, None),
     ("vehicle_last_run", None, SensorDeviceClass.TIMESTAMP, None, None),
     ("command_feedback", None, None, None, None),
     ("address", None, None, None, None),
@@ -114,6 +115,20 @@ class Mg4Sensor(RestoreSensor):
             self._attr_icon = "mdi:message-reply-text"
             self._attr_device_class = SensorDeviceClass.ENUM
             self._attr_options = ["idle", "ok", "fail"]
+        if key == "update_reason":
+            self._attr_icon = "mdi:history"
+            self._attr_device_class = SensorDeviceClass.ENUM
+            self._attr_options = [
+                "periodic",
+                "startup",
+                "wifi",
+                "vehicle_ready",
+                "car_changed",
+                "ha_command",
+                "manual",
+                "retry",
+                "unknown",
+            ]
 
     def _data(self) -> dict:
         return self.hass.data[DOMAIN][self._entry.entry_id]["data"]
@@ -142,6 +157,14 @@ class Mg4Sensor(RestoreSensor):
             if not isinstance(val, str) or val not in (self._attr_options or []):
                 return "idle"
             return val
+        if self._key == "update_reason":
+            val = self._data().get(self._key)
+            opts = self._attr_options or []
+            if isinstance(val, str) and val in opts:
+                return val
+            if isinstance(val, str) and val:
+                return "unknown"
+            return None
         return val
 
     @property
