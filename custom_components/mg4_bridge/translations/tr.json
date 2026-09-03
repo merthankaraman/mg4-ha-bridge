@@ -28,6 +28,8 @@
           "startup": "Servis başladı",
           "wifi": "WiFi bağlandı",
           "vehicle_ready": "Araç çalışır durumda",
+          "charging_started": "Şarj başladı",
+          "charging_stopped": "Şarj bitti",
           "car_changed": "Araçta değişim",
           "ha_command": "Home Assistant komutu",
           "manual": "Elle güncelleme",

@@ -123,6 +123,8 @@ class Mg4Sensor(RestoreSensor):
                 "startup",
                 "wifi",
                 "vehicle_ready",
+                "charging_started",
+                "charging_stopped",
                 "car_changed",
                 "ha_command",
                 "manual",

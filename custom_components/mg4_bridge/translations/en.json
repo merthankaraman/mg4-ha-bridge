@@ -28,6 +28,8 @@
           "startup": "Service started",
           "wifi": "Wi-Fi connected",
           "vehicle_ready": "Vehicle ready",
+          "charging_started": "Charging started",
+          "charging_stopped": "Charging stopped",
           "car_changed": "Changed on vehicle",
           "ha_command": "Home Assistant command",
           "manual": "Manual refresh",
